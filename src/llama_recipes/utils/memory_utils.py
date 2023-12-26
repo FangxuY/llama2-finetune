@@ -12,6 +12,7 @@ def byte2gb(x):
 # This context manager is used to track the peak memory usage of the process
 class MemoryTrace:
     def __enter__(self):
+        # torch.cuda.set_device(1)
         gc.collect()
         torch.cuda.empty_cache()
         torch.cuda.reset_max_memory_allocated()  # reset the peak gauge to zero

@@ -64,12 +64,13 @@ def main(**kwargs):
         world_size = int(os.environ["WORLD_SIZE"])
 
     if torch.distributed.is_initialized():
-        torch.cuda.set_device(local_rank)
+        torch.cuda.set_device(1)
         clear_gpu_cache(local_rank)
         setup_environ_flags(rank)
 
     # Load the pre-trained model and setup its configuration
     use_cache = False if train_config.enable_fsdp else None
+    use_cache = False
     if train_config.enable_fsdp and train_config.low_cpu_fsdp:
         """
         for FSDP, we can save cpu memory by loading pretrained model on rank0 only.
@@ -99,7 +100,7 @@ def main(**kwargs):
         model = LlamaForCausalLM.from_pretrained(
             train_config.model_name,
             load_in_8bit=True if train_config.quantization else None,
-            device_map="auto" if train_config.quantization else None,
+            device_map="auto",
             use_cache=use_cache,
         )
     if train_config.enable_fsdp and train_config.use_fast_kernels:
@@ -166,7 +167,7 @@ def main(**kwargs):
         tokenizer,
         dataset_config,
         split="train",
-    )
+    )['train']
 
     if not train_config.enable_fsdp or rank == 0:
         print(f"--> Training Set Length = {len(dataset_train)}")
@@ -175,7 +176,7 @@ def main(**kwargs):
         tokenizer,
         dataset_config,
         split="test",
-    )
+    )['train']
     if not train_config.enable_fsdp or rank == 0:
             print(f"--> Validation Set Length = {len(dataset_val)}")
 
@@ -191,7 +192,7 @@ def main(**kwargs):
         pin_memory=True,
         **train_dl_kwargs,
     )
-
+    print(f"Size of train_dataloader is {len(train_dataloader)}")
     eval_dataloader = None
     if train_config.run_validation:
         if train_config.batching_strategy == "packing":
@@ -205,6 +206,7 @@ def main(**kwargs):
             pin_memory=True,
             **val_dl_kwargs,
         )
+        print(f"Size of eval_dataloader is {len(eval_dataloader)}")
 
     # Initialize the optimizer and learning rate scheduler
     if fsdp_config.pure_bf16 and fsdp_config.optimizer == "anyprecision":

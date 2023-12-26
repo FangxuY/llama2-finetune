@@ -2,18 +2,14 @@ import copy
 import datasets
 
 
-def get_commsense_dataset(dataset_config, tokenizer, split):
-    if split == 'train':
-        dataset = datasets.load_from_disk("json", data_files='./CommSense.jsonl')
-    else:
-        dataset = datasets.load_from_disk("json", data_files='./CommSense_eval.jsonl')
+def get_preprocessed_commsense(dataset_config, tokenizer, split):
+    dataset = datasets.load_dataset("json", data_files='src/llama_recipes/datasets/CommSense.json', field=split)
     def apply_prompt_template(sample):
         return {
             "question": sample["question"],
             "answer": sample["answer"],
         }
-
-    dataset = dataset.map(apply_prompt_template)
+    dataset = dataset.map(apply_prompt_template, remove_columns=list(dataset['train'].features))
 
     def tokenize_add_label(sample):
         question = tokenizer.encode(tokenizer.bos_token + sample["question"], add_special_tokens=False)
@@ -22,11 +18,10 @@ def get_commsense_dataset(dataset_config, tokenizer, split):
         sample = {
             "input_ids": question + answer,
             "attention_mask" : [1] * (len(question) + len(answer)),
-            "labels": [-100] * len(answer) + question,
-            }
-
+            "labels": [-100] * len(question) + answer,
+        }
         return sample
     
-    dataset = dataset.map(tokenize_add_label, remove_columns=list(dataset.features))
+    dataset = dataset.map(tokenize_add_label, remove_columns=list(dataset['train'].features))
 
     return dataset

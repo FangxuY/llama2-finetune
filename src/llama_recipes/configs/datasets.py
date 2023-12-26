@@ -36,7 +36,7 @@ class custom_dataset:
 
 @dataclass
 class commsense_dataset:
-    dataset: str = "commsense"
+    dataset: str = "commsense_dataset"
     train_split: str = "train"
     test_split: str = "test"
-    data_path: str = "src/llama_recipes/datasets/CommSense.jsonl"
+    file: str = "src/llama_recipes/datasets/commsense_dataset.py"
