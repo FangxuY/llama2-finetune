@@ -26,7 +26,7 @@ def tokenize_dialog(dialog, tokenizer):
 
 
 def get_custom_dataset(dataset_config, tokenizer, split):
-    dataset = datasets.load_dataset("OpenAssistant/oasst1", split=split)
+    dataset = datasets.load_from_disk("OpenAssistant/oasst1", split=split)
 
     dataset = dataset.map(lambda sample: {
         "message_id": sample["message_id"],

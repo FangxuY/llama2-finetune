@@ -32,3 +32,11 @@ class custom_dataset:
     file: str = "examples/custom_dataset.py"
     train_split: str = "train"
     test_split: str = "validation"
+
+
+@dataclass
+class commsense_dataset:
+    dataset: str = "commsense"
+    train_split: str = "train"
+    test_split: str = "test"
+    data_path: str = "src/llama_recipes/datasets/CommSense.jsonl"
