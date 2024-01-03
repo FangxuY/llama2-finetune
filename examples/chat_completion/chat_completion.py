@@ -16,12 +16,12 @@ from llama_recipes.inference.safety_utils import get_safety_checker
 
 
 def main(
-    model_name,
-    peft_model: str=None,
+    model_name: str="/home/zhiyuan/llama2-recipe/Llama-2-13b-chat-hf",
+    peft_model: str="/home/zhiyuan/llama2-recipe/peft_output",
     quantization: bool=False,
-    max_new_tokens =256, #The maximum numbers of tokens to generate
+    max_new_tokens =4096, #The maximum numbers of tokens to generate
     min_new_tokens:int=0, #The minimum numbers of tokens to generate
-    prompt_file: str=None,
+    prompt_file: str="/home/zhiyuan/llama2-recipe/llama2-finetune/examples/chat_completion/chats.json",
     seed: int=42, #seed value for reproducibility
     safety_score_threshold: float=0.5,
     do_sample: bool=True, #Whether or not to use sampling ; use greedy decoding otherwise.
@@ -34,6 +34,7 @@ def main(
     enable_azure_content_safety: bool=False, # Enable safety check with Azure content safety api
     enable_sensitive_topics: bool=False, # Enable check for sensitive topics using AuditNLG APIs
     enable_saleforce_content_safety: bool=True, # Enable safety check woth Saleforce safety flan t5
+    enable_llamaguard_content_safety: bool=False,
     use_fast_kernels: bool = False, # Enable using SDPA from PyTorch Accelerated Transformers, make use Flash Attention and Xformer memory-efficient kernels
     **kwargs
 ):
@@ -87,6 +88,7 @@ def main(
             safety_checker = get_safety_checker(enable_azure_content_safety,
                                         enable_sensitive_topics,
                                         enable_saleforce_content_safety,
+                                        enable_llamaguard_content_safety
                                         )
             # Safety check of the user prompt
             safety_results = [check(dialogs[idx][0]["content"]) for check in safety_checker]

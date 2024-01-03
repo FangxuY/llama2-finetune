@@ -64,7 +64,6 @@ def main(**kwargs):
         world_size = int(os.environ["WORLD_SIZE"])
 
     if torch.distributed.is_initialized():
-        torch.cuda.set_device(1)
         clear_gpu_cache(local_rank)
         setup_environ_flags(rank)
 
@@ -100,7 +99,7 @@ def main(**kwargs):
         model = LlamaForCausalLM.from_pretrained(
             train_config.model_name,
             load_in_8bit=True if train_config.quantization else None,
-            device_map="auto",
+            device_map="auto" if train_config.quantization else None,
             use_cache=use_cache,
         )
     if train_config.enable_fsdp and train_config.use_fast_kernels:
@@ -167,8 +166,7 @@ def main(**kwargs):
         tokenizer,
         dataset_config,
         split="train",
-    )['train']
-
+    )
     if not train_config.enable_fsdp or rank == 0:
         print(f"--> Training Set Length = {len(dataset_train)}")
 
@@ -176,7 +174,7 @@ def main(**kwargs):
         tokenizer,
         dataset_config,
         split="test",
-    )['train']
+    )
     if not train_config.enable_fsdp or rank == 0:
             print(f"--> Validation Set Length = {len(dataset_val)}")
 
@@ -193,6 +191,7 @@ def main(**kwargs):
         **train_dl_kwargs,
     )
     print(f"Size of train_dataloader is {len(train_dataloader)}")
+    print(train_dataloader)
     eval_dataloader = None
     if train_config.run_validation:
         if train_config.batching_strategy == "packing":
