@@ -3,6 +3,7 @@
 
 from peft import PeftModel
 from transformers import LlamaForCausalLM, LlamaConfig
+import torch
 
 # Function to load the main model for text generation
 def load_model(model_name, quantization):
@@ -10,15 +11,15 @@ def load_model(model_name, quantization):
         model_name,
         return_dict=True,
         load_in_8bit=quantization,
-        device_map="auto",
-        low_cpu_mem_usage=True,
+        device_map="auto"
     )
     return model
 
 
 # Function to load the PeftModel for performance optimization
 def load_peft_model(model, peft_model):
-    peft_model = PeftModel.from_pretrained(model, peft_model)
+    peft_model = PeftModel.from_pretrained(
+        model, peft_model, device_map="auto")
     return peft_model
 
 # Loading the model from config to load FSDP checkpoints into that

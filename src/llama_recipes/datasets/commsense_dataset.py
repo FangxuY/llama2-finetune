@@ -3,7 +3,7 @@ import datasets
 
 
 def get_preprocessed_commsense(dataset_config, tokenizer, split):
-    dataset = datasets.load_dataset("json", data_files='src/llama_recipes/datasets/CommSense.json', field=split, split='train')
+    dataset = datasets.load_dataset("json", data_files='src/llama_recipes/datasets/CommSense_CoT_2000.json', field=split, split='train')
     def apply_prompt_template(sample):
         return {
             "question": sample["question"],

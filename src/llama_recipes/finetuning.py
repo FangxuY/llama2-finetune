@@ -64,12 +64,12 @@ def main(**kwargs):
         world_size = int(os.environ["WORLD_SIZE"])
 
     if torch.distributed.is_initialized():
+        torch.cuda.set_device(local_rank)
         clear_gpu_cache(local_rank)
         setup_environ_flags(rank)
 
     # Load the pre-trained model and setup its configuration
     use_cache = False if train_config.enable_fsdp else None
-    use_cache = False
     if train_config.enable_fsdp and train_config.low_cpu_fsdp:
         """
         for FSDP, we can save cpu memory by loading pretrained model on rank0 only.

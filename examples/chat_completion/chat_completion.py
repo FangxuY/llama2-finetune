@@ -16,16 +16,16 @@ from llama_recipes.inference.safety_utils import get_safety_checker
 
 
 def main(
-    model_name: str="/home/zhiyuan/llama2-recipe/Llama-2-13b-chat-hf",
-    peft_model: str="/home/zhiyuan/llama2-recipe/peft_output",
-    quantization: bool=False,
-    max_new_tokens =4096, #The maximum numbers of tokens to generate
+    model_name: str="/mnt/sdb/Llama-2-13b-chat-hf/",
+    peft_model: str="/home/zhiyuan/llama2-recipe/peft_output_CoT1000",
+    quantization: bool=True,
+    max_new_tokens =1024, #The maximum numbers of tokens to generate
     min_new_tokens:int=0, #The minimum numbers of tokens to generate
-    prompt_file: str="/home/zhiyuan/llama2-recipe/llama2-finetune/examples/chat_completion/chats.json",
+    prompt_file: str="/home/zhiyuan/llama2-recipe/llama2-finetune/examples/chat_completion/chats_test.json",
     seed: int=42, #seed value for reproducibility
     safety_score_threshold: float=0.5,
     do_sample: bool=True, #Whether or not to use sampling ; use greedy decoding otherwise.
-    use_cache: bool=True,  #[optional] Whether or not the model should use the past last key/values attentions Whether or not the model should use the past last key/values attentions (if applicable to the model) to speed up decoding.
+    use_cache: bool=False,  #[optional] Whether or not the model should use the past last key/values attentions Whether or not the model should use the past last key/values attentions (if applicable to the model) to speed up decoding.
     top_p: float=1.0, # [optional] If set to float < 1, only the smallest set of most probable tokens with probabilities that add up to top_p or higher are kept for generation.
     temperature: float=1.0, # [optional] The value used to modulate the next token probabilities.
     top_k: int=50, # [optional] The number of highest probability vocabulary tokens to keep for top-k-filtering.
@@ -33,7 +33,7 @@ def main(
     length_penalty: int=1, #[optional] Exponential penalty to the length that is used with beam-based generation.
     enable_azure_content_safety: bool=False, # Enable safety check with Azure content safety api
     enable_sensitive_topics: bool=False, # Enable check for sensitive topics using AuditNLG APIs
-    enable_saleforce_content_safety: bool=True, # Enable safety check woth Saleforce safety flan t5
+    enable_saleforce_content_safety: bool=False, # Enable safety check woth Saleforce safety flan t5
     enable_llamaguard_content_safety: bool=False,
     use_fast_kernels: bool = False, # Enable using SDPA from PyTorch Accelerated Transformers, make use Flash Attention and Xformer memory-efficient kernels
     **kwargs
@@ -51,16 +51,15 @@ def main(
         print("No user prompt provided. Exiting.")
         sys.exit(1)
 
-    print(f"User dialogs:\n{dialogs}")
-    print("\n==================================\n")
-
 
     # Set the seeds for reproducibility
+    torch.cuda.empty_cache() 
     torch.cuda.manual_seed(seed)
     torch.manual_seed(seed)
     model = load_model(model_name, quantization)
     if peft_model:
         model = load_peft_model(model, peft_model)
+    model.to("cuda")
     if use_fast_kernels:
         """
         Setting 'use_fast_kernels' will enable
@@ -94,8 +93,8 @@ def main(
             safety_results = [check(dialogs[idx][0]["content"]) for check in safety_checker]
             are_safe = all([r[1] for r in safety_results])
             if are_safe:
-                print(f"User prompt deemed safe.")
-                print("User prompt:\n", dialogs[idx][0]["content"])
+                # print(f"User prompt deemed safe.")
+                # print("User prompt:\n", dialogs[idx][0]["content"])
                 print("\n==================================\n")
             else:
                 print("User prompt deemed unsafe.")
@@ -122,15 +121,20 @@ def main(
             )
 
             output_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-
             # Safety check of the model output
             safety_results = [check(output_text) for check in safety_checker]
             are_safe = all([r[1] for r in safety_results])
             if are_safe:
-                print("User input and model output deemed safe.")
+                # print("User input and model output deemed safe.")
                 print(f"Model output:\n{output_text}")
+                output_file_path = "/home/zhiyuan/llama2-recipe/peft_output_CoT1000_answer_2.txt"
+                # Write output_text to a file
+                with open(output_file_path, "a") as output_file:
+                    output_file.write(output_text)
+                    output_file.write("\n")
+                    print(f"Model output appended to {output_file_path}")
                 print("\n==================================\n")
-
+                
             else:
                 print("Model output deemed unsafe.")
                 for method, is_safe, report in safety_results:
