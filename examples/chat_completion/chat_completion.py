@@ -17,7 +17,7 @@ from llama_recipes.inference.safety_utils import get_safety_checker
 
 def main(
     model_name: str="/mnt/sdb/Llama-2-13b-chat-hf/",
-    peft_model: str="/home/zhiyuan/llama2-recipe/peft_output_CoT1000",
+    peft_model: str="/home/zhiyuan/llama2-recipe/peft_output3",
     quantization: bool=True,
     max_new_tokens =1024, #The maximum numbers of tokens to generate
     min_new_tokens:int=0, #The minimum numbers of tokens to generate
@@ -127,7 +127,7 @@ def main(
             if are_safe:
                 # print("User input and model output deemed safe.")
                 print(f"Model output:\n{output_text}")
-                output_file_path = "/home/zhiyuan/llama2-recipe/peft_output_CoT1000_answer_2.txt"
+                output_file_path = "/home/zhiyuan/llama2-recipe/peft_output_standard2000_answer_1.txt"
                 # Write output_text to a file
                 with open(output_file_path, "a") as output_file:
                     output_file.write(output_text)

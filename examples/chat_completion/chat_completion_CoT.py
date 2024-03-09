@@ -19,7 +19,7 @@ def main(
     model_name: str="/mnt/sdb/Llama-2-13b-chat-hf/",
     peft_model: str=None,
     quantization: bool=True,
-    max_new_tokens = 2048, #The maximum numbers of tokens to generate
+    max_new_tokens = 4095, #The maximum numbers of tokens to generate
     min_new_tokens:int=0, #The minimum numbers of tokens to generate
     prompt_file: str="/home/zhiyuan/llama2-recipe/llama2-finetune/examples/chat_completion/chats_llama_CoT.json",
     seed: int=42, #seed value for reproducibility
@@ -126,7 +126,7 @@ def main(
             if are_safe:
                 # print("User input and model output deemed safe.")
                 print(f"Model output:\n{output_text}")
-                output_file_path = "/home/zhiyuan/llama2-recipe/peft_output_CoT_answer_1.txt"
+                output_file_path = "/home/zhiyuan/llama2-recipe/peft_output_CoT_answer_3.txt"
                 # Write output_text to a file
                 with open(output_file_path, "a") as output_file:
                     output_file.write(output_text)
